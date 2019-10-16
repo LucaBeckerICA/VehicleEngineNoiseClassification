@@ -150,7 +150,7 @@ def create_model(b,f,k,p,d,u):
         keras.layers.Dense(units=u,activation=keras.activations.relu),
         keras.layers.Dropout(d),
         #keras.layers.Dense(units=2,activation=keras.activations.sigmoid),
-        keras.layers.Dense(units=12, activation=keras.activations.softmax)
+        keras.layers.Dense(units=16, activation=keras.activations.softmax)
     ])
     return model
 
