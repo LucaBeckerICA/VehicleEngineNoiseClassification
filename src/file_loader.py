@@ -1,34 +1,32 @@
 import numpy as np
 from scipy.io import loadmat
 
+
+'''
+File Loading Script that prepares the Dataset for the Non-Modulation based features
+from Becker et al. (PCEN/MFCC features)
+'''
 def load_data_validation_percentage(file, subsizes):
 
-    '''Important: balanced dataset (1/2 class 1, 1/2 class 2), even amount of files'''
+    ''' Loading the dataset from the precomputed .mat file. '''
 
+    # Loading the data
     data = loadmat(file)
-    # 2 classes 1(0:20), 2(21:40)
-    #c1_data_list = data["data"][0][0:80]
-    #c2_data_list = data["data"][0][80:160]
 
+    # Identifying the class-dependant partitions (D/P, HGV/PC)
     c1_data_list = data["data"][0][0:int(len(data["data"][0])/2)]
     c2_data_list = data["data"][0][int(len(data["data"][0])/2):len(data["data"][0])]
 
-    #Noise Test: -> works (test accuracy 0.5) :-)
-    #c1_data_list = np.random.normal(0,1,(80,32,32))
-    #c2_data_list = np.random.normal(0,1,(80,32,32))
-
-    #c1_data_list = c1_data_list.tolist()
-    #c2_data_list = c2_data_list.tolist()
-
+    # Splitting each partition into Training, Validation and Testing subset
     val_amount = int(subsizes[0]*len(c1_data_list))
     test_amount = int(subsizes[1]*len(c1_data_list))
     train_amount = len(c1_data_list) - val_amount - test_amount
 
-
+    # Asserting the class-dependant target labels for each partition
     c1_labels_list = np.zeros(shape=len(c1_data_list),dtype=np.int).tolist()
     c2_labels_list = np.ones(shape=len(c1_data_list), dtype=np.int).tolist()
 
-    # shuffle:
+    # shuffling the data
     indices = np.arange(c1_data_list.shape[0])
     np.random.shuffle(indices)
     c1_data_list = c1_data_list[indices]
@@ -40,7 +38,7 @@ def load_data_validation_percentage(file, subsizes):
 
 
 
-    # for now
+    # Post-processing the labels/data assertion
     cut_train = train_amount
     c1_training_data_list = c1_data_list[0:cut_train]
     c1_val_data_list = c1_data_list[cut_train:cut_train+val_amount]
@@ -81,7 +79,7 @@ def load_data_validation_percentage(file, subsizes):
     test_data_list = list(test_data_list)
     test_labels_list = list(test_labels_list)
 
-    # One-hot Encoding
+    # One-hot Encoding for class identification
     for i in range(len(training_labels_list)):
         training_labels_list[i] = one_hot(training_labels_list[i], 2)
 
@@ -91,7 +89,7 @@ def load_data_validation_percentage(file, subsizes):
     for i in range(len(test_labels_list)):
         test_labels_list[i] = one_hot(test_labels_list[i], 2)
 
-
+    # Returning Training data + labels, Validation data + labels, Testing data + labels
     return training_data_list, training_labels_list, val_data_list, val_labels_list, test_data_list, test_labels_list
 
 
@@ -150,6 +148,8 @@ def arrange_for_siamese(x_train, y_train, x_val, y_val, x_test, y_test):
 
 def arrange_train_for_siamese(x_train, y_train):
 
+
+    # Similar function as the above, prepares the data for siamese Training/Inference
     x_train = np.array(x_train)
     y_train = np.array(y_train)
 
@@ -172,8 +172,11 @@ def arrange_train_for_siamese(x_train, y_train):
 
     return x_train_data, y_train_dist
 
+
+
 def one_hot_encoding(data, num_classes):
 
+    # Helper function that one-hot encodes a given vector
     oh_mat = np.zeros((len(data), num_classes))
     for i in range(len(data)):
         for j in range(num_classes):
@@ -183,6 +186,8 @@ def one_hot_encoding(data, num_classes):
 
 
 def one_hot(n, amount):
+
+    # Helper function that one-hot encodes a given scalar
     oh = np.zeros(amount)
     oh[n] = 1
     return oh
